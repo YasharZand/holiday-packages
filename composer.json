@@ -1,7 +1,7 @@
 {
-    "name": "Hotel Reservation",
+    "name": "Package Reservation",
     "type": "project",
-    "description": "The Hotel reservation API",
+    "description": "The Holliday Package API",
     "keywords": [
         "framework",
         "laravel"
