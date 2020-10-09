@@ -14,6 +14,7 @@ https://github.com/YasharZand/holiday-packages.git
 Then install all dependancies by running composer in the workspace root directory:
 ```bash
 composer install
+php artisan key:generate
 ```
 Set your database credentials in the .env file
 Do a migrate so the schema be deployed in your database gracefullly
