@@ -18,24 +18,18 @@ class PackageController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $packages = Package::orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $packages->toArray()
+        return PackageResource::collection(
+            Package::simplePaginate($request->input('paginate') ?? 15)
+            )->additional([
+                'meta' => [
+                  'success' => true,
+                 'message' => "packages loaded",
+            ]
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -47,37 +41,39 @@ class PackageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'hotel_name' => 'required',
+            'hotel_name' => 'required|string',
             'hotel_url' => 'required|url',
-            'duration' => 'required',
+            'duration' => 'required|numeric',
             'package_start_date' => 'required|Date',
-            'validity' => 'required',
-            'hotel_star' => 'required',
-            'price' => 'required|Numeric'
+            'validity' => 'required|numeric',
+            'hotel_star' => 'required|numeric',
+            'price' => 'required|numeric'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors()->toArray(), 422);
         }
  
-        try{
+        try {
             $package = PackageTransformer::toInstance($validator->validate());
             if ($package->save()) {
-                return response()->json([
-                    'success' => true,
-                    'data' => $package->toArray()
-                ]);
-            }else
+                return (new PackageResource($package))
+                    ->additional([
+                        'meta' => [
+                          'success' => true,
+                          'message' => "package created"
+                     ]
+            ]);
+            } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'package not added'
                 ], 500);
-
+            }
         } catch (Exception $ex) {
             Log::info($ex->getMessage());
             return response()->json($ex->getMessage(), 409);
         }
-        
     }
 
     /**
@@ -88,31 +84,13 @@ class PackageController extends Controller
      */
     public function show(Package $package)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Package  $package
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Package $package)
-    {
-        
- 
-       # $package = Package::find($id);
-
-        if ($package->save()) {
-            return response()->json([
-                'success' => true,
-                'data' => $package->toArray()
+        return (new PackageResource($package))
+            ->additional([
+                'meta' => [
+                    'success' => true,
+                    'message' => "package found"
+                ]
             ]);
-        }else
-            return response()->json([
-                'success' => false,
-                'message' => 'package not modified'
-            ], 500);
     }
 
     /**
@@ -124,28 +102,37 @@ class PackageController extends Controller
      */
     public function update(Request $request, Package $package)
     {
-
-        $this->validate($request, [
+        $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'hotel_name' => 'required',
+            'hotel_name' => 'required|string',
             'hotel_url' => 'required|url',
-            'duration' => 'required',
+            'duration' => 'required|numeric',
             'package_start_date' => 'required|Date',
-            'validity' => 'required',
-            'hotel_star' => 'required',
-            'price' => 'required|Numeric'
+            'validity' => 'required|numeric',
+            'hotel_star' => 'required|numeric',
+            'price' => 'required|numeric'
         ]);
 
-        $package->name = $request->name;
-        $package->hotel_name = $request->hotel_name;
-        $package->hotel_url = $request->hotel_url;
-        $package->duration = $request->duration;
-        $package->package_start_date = $request->package_start_date;
-        $package->validity = $request->validity;
-        $package->hotel_star = $request->hotel_star;
-        $package->price = $request->price;
-        $package->quantity = $request->quantity;
-        return $this->edit($package);
+        if ($validator->fails()) {  
+            return response()->json($validator->errors()->toArray(), 422);  
+        }  
+
+        try {  
+            $updated_package = PackageTransformer::toInstance($validator->validate(), $package);  
+            if ($updated_package->save()) {
+                return (new PackageResource($package))
+                    ->additional([
+                        'meta' => [
+                          'success' => true,
+                          'message' => "package updated"
+                     ]
+            ]);
+            } 
+ 
+        } catch (Exception $ex) {  
+            Log::info($ex->getMessage());   
+            return response()->json($ex->getMessage(), 409);  
+        }
     }
 
     /**
@@ -156,6 +143,14 @@ class PackageController extends Controller
      */
     public function destroy(Package $package)
     {
-        //
+        try {  
+            $package->delete();  
+            // $package->save();  
+        } catch (Exception $ex) {  
+            Log::info($ex->getMessage());  
+            return response()->json($ex->getMessage(), 409);  
+        }  
+    
+        return response()->json('package has been deleted', 200);
     }
 }

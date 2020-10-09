@@ -1,7 +1,7 @@
 {
-    "name": "Package Reservation",
+    "name": "Holiday Package Reservation",
     "type": "project",
-    "description": "The Holliday Package API",
+    "description": "The Holiday Package Reservation API",
     "keywords": [
         "framework",
         "laravel"
