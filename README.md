@@ -1,6 +1,6 @@
 
 
-## About AirAsia Holliday Package App
+## About AirAsia Holiday Package App
 
 This API provides the CRUD functions for Holiday Packages and their Reservations. It was written to fullfil an AirAsia code challenge. Written in Laravel 8.0 as a RESTfull API with Laravel Passport authentication.
 
